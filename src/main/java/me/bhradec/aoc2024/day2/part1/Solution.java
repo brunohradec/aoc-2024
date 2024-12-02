@@ -18,25 +18,25 @@ public class Solution {
     private static final int MIN_DIFF = 1;
     private static final int MAX_DIFF = 3;
 
-    private boolean isLevelSafe(List<Integer> level) {
-        log.debug("Read level: {}", level);
+    private boolean isReportSafe(List<Integer> report) {
+        log.debug("Read report levels: {}", report);
 
-        List<Integer> ascendingLevel = new ArrayList<>(level);
-        ascendingLevel.sort(Comparator.naturalOrder());
+        List<Integer> ascReport = new ArrayList<>(report);
+        ascReport.sort(Comparator.naturalOrder());
 
-        List<Integer> descendingLevel = new ArrayList<>(level);
-        descendingLevel.sort(Comparator.reverseOrder());
+        List<Integer> descReport = new ArrayList<>(report);
+        descReport.sort(Comparator.reverseOrder());
 
-        if (!level.equals(ascendingLevel) && !level.equals(descendingLevel)) {
-            log.debug("Level not ascending or descending");
+        if (!report.equals(ascReport) && !report.equals(descReport)) {
+            log.debug("Report levels not ascending or descending");
             return false;
         }
 
-        for (int i = 0; i < level.size() - 1; i++) {
-            int diff = Math.abs(level.get(i) - level.get(i + 1));
+        for (int i = 0; i < report.size() - 1; i++) {
+            int diff = Math.abs(report.get(i) - report.get(i + 1));
 
             if (diff < MIN_DIFF || diff > MAX_DIFF) {
-                log.debug("Level elements ({} and {}) unsafe", level.get(i), level.get(i + 1));
+                log.debug("Report levels ({} and {}) unsafe", report.get(i), report.get(i + 1));
                 return false;
             }
         }
@@ -44,20 +44,20 @@ public class Solution {
         return true;
     }
 
-    private long countSafeFromInput(String path) throws IOException {
-        long safeLevelCnt = 0;
+    private long countSafeReportsFromInput(String path) throws IOException {
+        long safeReportCnt = 0;
 
         try (BufferedReader reader = new BufferedReader(new FileReader(path))) {
             String line = reader.readLine();
 
             while (line != null) {
-                List<Integer> level = Arrays.stream(line.split(" ")).map(Integer::parseInt).toList();
-                if (isLevelSafe(level)) safeLevelCnt++;
+                List<Integer> report = Arrays.stream(line.split(" ")).map(Integer::parseInt).toList();
+                if (isReportSafe(report)) safeReportCnt++;
                 line = reader.readLine();
             }
         }
 
-        return safeLevelCnt;
+        return safeReportCnt;
     }
 
     public static void main(String[] args) {
@@ -89,10 +89,10 @@ public class Solution {
         Solution solution = new Solution();
 
         try {
-            long safeLevelCnt = solution.countSafeFromInput(inputPath);
-            log.info("Safe levels: {}", safeLevelCnt);
+            long safeReportCnt = solution.countSafeReportsFromInput(inputPath);
+            log.info("Safe reports: {}", safeReportCnt);
         } catch (IOException exception) {
-            log.error("Could not count safe levels", exception);
+            log.error("Could not count safe reports", exception);
         }
     }
 }
