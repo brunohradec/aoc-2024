@@ -18,33 +18,34 @@ public class Solution {
     private static final int MIN_DIFF = 1;
     private static final int MAX_DIFF = 3;
 
-    private boolean isReportSafe(List<Integer> report) {
-        log.debug("Read report levels: {}", report);
-
+    private boolean isReportSafe(final List<Integer> report) {
         List<Integer> ascReport = new ArrayList<>(report);
         ascReport.sort(Comparator.naturalOrder());
 
         List<Integer> descReport = new ArrayList<>(report);
         descReport.sort(Comparator.reverseOrder());
 
-        if (!report.equals(ascReport) && !report.equals(descReport)) {
-            log.debug("Report levels not ascending or descending");
-            return false;
-        }
+        if (!report.equals(ascReport) && !report.equals(descReport)) return false;
 
         for (int i = 0; i < report.size() - 1; i++) {
             int diff = Math.abs(report.get(i) - report.get(i + 1));
-
-            if (diff < MIN_DIFF || diff > MAX_DIFF) {
-                log.debug("Report levels ({} and {}) unsafe", report.get(i), report.get(i + 1));
-                return false;
-            }
+            if (diff < MIN_DIFF || diff > MAX_DIFF) return false;
         }
 
         return true;
     }
 
-    private long countSafeReportsFromInput(String path) throws IOException {
+    private boolean isReportSafeDampened(final List<Integer> report) {
+        for (int i = 0; i < report.size(); i++) {
+            List<Integer> dampenedReport = new ArrayList<>(report);
+            dampenedReport.remove(i);
+            if (isReportSafe(dampenedReport)) return true;
+        }
+
+        return false;
+    }
+
+    private long countSafeReportsFromInput(final String path) throws IOException {
         long safeReportCnt = 0;
 
         try (BufferedReader reader = new BufferedReader(new FileReader(path))) {
@@ -52,18 +53,7 @@ public class Solution {
 
             while (line != null) {
                 List<Integer> report = Arrays.stream(line.split(" ")).map(Integer::parseInt).toList();
-                if (isReportSafe(report)) {
-                    safeReportCnt++;
-                } else {
-                    for (int i = 0; i < report.size(); i++) {
-                        List<Integer> dampenedReport = new ArrayList<>(report);
-                        dampenedReport.remove(i);
-                        if (isReportSafe(dampenedReport)) {
-                            safeReportCnt++;
-                            break;
-                        }
-                    }
-                }
+                if (isReportSafe(report) || isReportSafeDampened(report)) safeReportCnt++;
                 line = reader.readLine();
             }
         }

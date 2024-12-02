@@ -19,26 +19,17 @@ public class Solution {
     private static final int MAX_DIFF = 3;
 
     private boolean isReportSafe(List<Integer> report) {
-        log.debug("Read report levels: {}", report);
-
         List<Integer> ascReport = new ArrayList<>(report);
         ascReport.sort(Comparator.naturalOrder());
 
         List<Integer> descReport = new ArrayList<>(report);
         descReport.sort(Comparator.reverseOrder());
 
-        if (!report.equals(ascReport) && !report.equals(descReport)) {
-            log.debug("Report levels not ascending or descending");
-            return false;
-        }
+        if (!report.equals(ascReport) && !report.equals(descReport)) return false;
 
         for (int i = 0; i < report.size() - 1; i++) {
             int diff = Math.abs(report.get(i) - report.get(i + 1));
-
-            if (diff < MIN_DIFF || diff > MAX_DIFF) {
-                log.debug("Report levels ({} and {}) unsafe", report.get(i), report.get(i + 1));
-                return false;
-            }
+            if (diff < MIN_DIFF || diff > MAX_DIFF) return false;
         }
 
         return true;
