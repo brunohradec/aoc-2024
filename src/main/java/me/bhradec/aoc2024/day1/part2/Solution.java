@@ -1,4 +1,4 @@
-package me.bhradec.aoc2024.day1.part1;
+package me.bhradec.aoc2024.day1.part2;
 
 import org.apache.commons.cli.*;
 import org.slf4j.Logger;
@@ -7,15 +7,13 @@ import org.slf4j.LoggerFactory;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
-public class Day1Part1Solution {
-    private static final Logger log = LoggerFactory.getLogger(Day1Part1Solution.class);
+public class Solution {
+    private static final Logger log = LoggerFactory.getLogger(Solution.class);
 
-    private List<Integer> leftList = new ArrayList<>();
-    private List<Integer> rightList = new ArrayList<>();
+    private final List<Integer> leftList = new ArrayList<>();
+    private final Map<Integer, Integer> rightListfrequency = new HashMap<>();
 
     private void parseInput(String path) throws IOException {
         try (BufferedReader reader = new BufferedReader(new FileReader(path))) {
@@ -25,33 +23,27 @@ public class Day1Part1Solution {
                 Integer leftNum = Integer.valueOf(line.split("\\s+")[0]);
                 Integer rightNum = Integer.valueOf(line.split("\\s+")[1]);
 
-                insertSorted(leftNum, leftList);
-                insertSorted(rightNum, rightList);
+                leftList.add(leftNum);
+
+                if (rightListfrequency.get(rightNum) != null) {
+                    rightListfrequency.put(rightNum, rightListfrequency.get(rightNum) + 1);
+                } else {
+                    rightListfrequency.put(rightNum, 1);
+                }
 
                 line = reader.readLine();
             }
         }
     }
 
-    private void insertSorted(Integer value, List<Integer> list) {
-        if (list.isEmpty()) {
-            list.add(value);
-            return;
+    private long getSimilarityScore() {
+        long similarityScore = 0;
+
+        for (int leftNum : leftList) {
+            similarityScore += (long) leftNum * rightListfrequency.getOrDefault(leftNum, 0);
         }
 
-        int indexToInsert = Collections.binarySearch(list, value);
-        if (indexToInsert < 0) indexToInsert = -(indexToInsert) - 1;
-        list.add(indexToInsert, value);
-    }
-
-    private long getDiffSum() {
-        long sum = 0;
-
-        for (int i = 0; i < leftList.size(); i++) {
-            sum += Math.abs(leftList.get(i) - rightList.get(i));
-        }
-
-        return sum;
+        return similarityScore;
     }
 
     public static void main(String[] args) {
@@ -80,15 +72,15 @@ public class Day1Part1Solution {
 
         String inputPath = commandLine.getOptionValue(inputPathOption);
 
-        Day1Part1Solution day1Part1Solution = new Day1Part1Solution();
+        Solution solution = new Solution();
 
         try {
-            day1Part1Solution.parseInput(inputPath);
+            solution.parseInput(inputPath);
         } catch (IOException exception) {
             log.error("Could not read input file", exception);
             return;
         }
 
-        log.info("Result: {}", day1Part1Solution.getDiffSum());
+        log.info("Result: {}", solution.getSimilarityScore());
     }
 }
