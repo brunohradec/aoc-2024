@@ -1,7 +1,6 @@
 package me.bhradec.aoc2024.day4.part2;
 
 import org.apache.commons.cli.*;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -10,7 +9,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Solution {
@@ -21,7 +19,7 @@ public class Solution {
 
     private static final String SEARCH_TEXT = "XMAS";
 
-    private final List<Pattern> patterns = new ArrayList<>(){{
+    private final List<Pattern> patterns = new ArrayList<>() {{
         add(Pattern.compile("M.M.A.S.S"));
         add(Pattern.compile("S.S.A.M.M"));
         add(Pattern.compile("M.S.A.M.S"));
