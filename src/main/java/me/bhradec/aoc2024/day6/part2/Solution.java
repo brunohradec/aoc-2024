@@ -15,29 +15,41 @@ public class Solution {
     private final int MAX_WIDTH = 130;
     private final int MAX_HEIGHT = 130;
 
+    private final String INITIAL_OBSTACLE = "#";
+    private final String ADDED_OBSTACLE = "O";
+
+    private final List<String> obstacles = List.of(
+            INITIAL_OBSTACLE,
+            ADDED_OBSTACLE
+    );
+
     private int findResultFromInput(String path) throws IOException {
         String[][] space = parseInput(path, MAX_HEIGHT, MAX_WIDTH);
         Position startPosition = findStartPosition(space);
 
         int loopCount = 0;
 
-        for (int i = 0; i < MAX_HEIGHT; i++) {
-            for (int j = 0; j < MAX_WIDTH; j++) {
-                if (!(i == startPosition.getY() && j == startPosition.getX())) {
-                    String[][] spaceWithObstacle = Arrays
-                            .stream(space)
-                            .map(String[]::clone)
-                            .toArray(String[][]::new);
+        /* Get the positions that the guard visits with the initial obstacles (initial guard path).
+         * Since initial obstacles don't change and only new ones are added, there's no use
+         * to adding obstacles outside the initial guard path since the guard will never
+         * get to such obstacles. The initial guard position is not included to not get
+         * overwritten by an added obstacle. */
+        List<Position> initialGuardPath = getGuardPath(startPosition, space);
 
-                    spaceWithObstacle[i][j] = "O";
+        for (Position position : initialGuardPath) {
+            String initialValue = space[position.getY()][position.getX()];
 
-                    if (checkLoop(startPosition, spaceWithObstacle)) {
-                        // System.out.println("Loop detected:");
-                        // printSpace(spaceWithObstacle);
-                        loopCount++;
-                    }
-                }
+            /* Mutating the initial 2D array is a bit faster than making a
+             * copy each time, especially as the 2D array can be quite large. */
+            space[position.getY()][position.getX()] = ADDED_OBSTACLE;
+
+            if (checkLoop(startPosition, space)) {
+                loopCount++;
             }
+
+            /* As array wasn't copied, after placing the added obstacle and
+             * checking for loops, the array is returned to the initial state. */
+            space[position.getY()][position.getX()] = initialValue;
         }
 
         return loopCount;
@@ -77,73 +89,84 @@ public class Solution {
         throw new RuntimeException("Start position not found");
     }
 
-    private boolean checkLoop(Position startPosition, String[][] space) {
-        Map<Position, Integer> visitedPositions = new HashMap<>();
+    /**
+     * Method used for getting all the positions that guard visits on a
+     * given map.
+     *
+     * @param startPosition The initial position of the guard
+     * @param space The map with obstacles and the guard
+     *
+     * @return A list of visited positions on a map (the guard path)
+     */
+    private List<Position> getGuardPath(Position startPosition, String[][] space) {
+        List<Position> visitedPositions = new ArrayList<>();
 
-        int i = startPosition.getY();
-        int j = startPosition.getX();
+        int x = startPosition.getX();
+        int y = startPosition.getY();
 
-        visitedPositions.put(new Position(j, i), 1);
-
-        int iNext = i;
-        int jNext = j;
-
-        Direction direction = switch (space[i][j]) {
-            case "^" -> Direction.UP;
-            case "v" -> Direction.DOWN;
-            case "<" -> Direction.LEFT;
-            case ">" -> Direction.RIGHT;
-            default -> throw new RuntimeException("Position does not match any known state");
-        };
+        Direction direction = getGuardDirection(space[y][x]);
 
         while (true) {
-            // log.info("Current position: x: {}, y: {}", j, i);
+            Position nextPosition = moveByOneInDirection(new Position(x, y), direction);
 
-            if (direction == Direction.UP) {
-                iNext = i - 1;
-                jNext = j;
-            }
-
-            if (direction == Direction.DOWN) {
-                iNext = i + 1;
-                jNext = j;
-            }
-
-            if (direction == Direction.LEFT) {
-                iNext = i;
-                jNext = j - 1;
-            }
-
-            if (direction == Direction.RIGHT) {
-                iNext = i;
-                jNext = j + 1;
-            }
-
-            if (!isOut(new Position(jNext, iNext), MAX_HEIGHT, MAX_WIDTH)) {
-                if (space[iNext][jNext].equals("#") || space[iNext][jNext].equals("O")) {
-                    direction = switch (direction) {
-                        case UP -> Direction.RIGHT;
-                        case DOWN -> Direction.LEFT;
-                        case LEFT -> Direction.UP;
-                        case RIGHT -> Direction.DOWN;
-                    };
-
-                    // log.debug("Turn: {}", direction);
+            if (!isOut(nextPosition, MAX_HEIGHT, MAX_WIDTH)) {
+                if (obstacles.contains(space[nextPosition.getY()][nextPosition.getX()])) {
+                    direction = turnGuardRight(direction);
                 } else {
-                    i = iNext;
-                    j = jNext;
+                    x = nextPosition.getX();
+                    y = nextPosition.getY();
 
-                    Position currentPosition = new Position(j, i);
-
-                    if (!visitedPositions.containsKey(currentPosition)) {
-                        visitedPositions.put(currentPosition, 1);
-                    } else {
-                        visitedPositions.put(currentPosition, visitedPositions.get(new Position(j, i)) + 1);
+                    /* The start position is not included in the list of visited positions */
+                    if (!visitedPositions.contains(new Position(x, y))
+                            && !(x == startPosition.getX() && y == startPosition.getY())) {
+                        visitedPositions.add(new Position(x, y));
                     }
+                }
+            } else {
+                break;
+            }
+        }
 
-                    if (visitedPositions.values().stream().anyMatch(x -> x > countObstacles(space))) {
-                        return true;
-                    }
+        return visitedPositions;
+    }
+
+    /**
+     * Method used for checking if a guard will end up in a loop.
+     *
+     * @param startPosition The initial position of the guard
+     * @param space The map with obstacles and the guard
+     *
+     * @return True if guard ends up in a loop, false if not.
+     */
+    private boolean checkLoop(Position startPosition, String[][] space) {
+        /* This list contains a log of the positions the guard visited and the
+        * direction the guard was facing. The direction is important for determining
+        * if the guard is moving in a loop. */
+        List<Movement> movementLog = new ArrayList<>();
+
+        int x = startPosition.getX();
+        int y = startPosition.getY();
+
+        Direction direction = getGuardDirection(space[y][x]);
+
+        movementLog.add(new Movement(x, y, direction));
+
+        while (true) {
+            Position nextPosition = moveByOneInDirection(new Position(x, y), direction);
+
+            if (!isOut(nextPosition, MAX_HEIGHT, MAX_WIDTH)) {
+                if (obstacles.contains(space[nextPosition.getY()][nextPosition.getX()])) {
+                    direction = turnGuardRight(direction);
+                } else {
+                    x = nextPosition.getX();
+                    y = nextPosition.getY();
+
+                    Movement movement = new Movement(x, y, direction);
+
+                    /* If the guard was already at this position moving at the
+                     * same direction, the guard is moving in a loop. */
+                    if (movementLog.contains(movement)) return true;
+                    else movementLog.add(movement);
                 }
             } else {
                 return false;
@@ -151,29 +174,39 @@ public class Solution {
         }
     }
 
+    private Direction getGuardDirection(String guard) {
+        return switch (guard) {
+            case "^" -> Direction.UP;
+            case "v" -> Direction.DOWN;
+            case "<" -> Direction.LEFT;
+            case ">" -> Direction.RIGHT;
+            default -> throw new RuntimeException("Position does not match any known state");
+        };
+    }
+
+    private Direction turnGuardRight(Direction oldDirection) {
+        return switch (oldDirection) {
+            case UP -> Direction.RIGHT;
+            case DOWN -> Direction.LEFT;
+            case LEFT -> Direction.UP;
+            case RIGHT -> Direction.DOWN;
+        };
+    }
+
+    private Position moveByOneInDirection(Position position, Direction direction) {
+        return switch (direction) {
+            case UP -> new Position(position.getX(), position.getY() - 1);
+            case DOWN -> new Position(position.getX(), position.getY() + 1);
+            case LEFT -> new Position(position.getX() - 1, position.getY());
+            case RIGHT -> new Position(position.getX() + 1, position.getY());
+        };
+    }
+
     private boolean isOut(Position position, int height, int width) {
-        return position.getX() >= width || position.getX() < 0 || position.getY() >= height || position.getY() < 0;
-    }
-
-    private void printSpace(String[][] space) {
-        System.out.println();
-        for (String[] row : space) {
-            System.out.println(Arrays.toString(row));
-        }
-    }
-
-    private int countObstacles(String[][] space) {
-        int count = 0;
-
-        for (String[] row : space) {
-            for (String col : row) {
-                if (col.equals("#") || col.equals("O")) {
-                    count++;
-                }
-            }
-        }
-
-        return count;
+        return position.getX() >= width
+                || position.getX() < 0
+                || position.getY() >= height
+                || position.getY() < 0;
     }
 
     public static void main(String[] args) {
