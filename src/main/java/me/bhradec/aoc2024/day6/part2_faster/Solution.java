@@ -1,4 +1,4 @@
-package me.bhradec.aoc2024.day6.part1;
+package me.bhradec.aoc2024.day6.part2_faster;
 
 import org.apache.commons.cli.*;
 import org.slf4j.Logger;
@@ -18,7 +18,25 @@ public class Solution {
     private int findResultFromInput(String path) throws IOException {
         String[][] space = parseInput(path, MAX_HEIGHT, MAX_WIDTH);
         Position startPosition = findStartPosition(space);
-        return countSteps(startPosition, space);
+
+        int loopCount = 0;
+
+        List<Position> guardTrail = getGuardTrail(startPosition, space);
+
+        for (Position position : guardTrail) {
+            String initialValue = space[position.getY()][position.getX()];
+
+            space[position.getY()][position.getX()] = "O";
+
+            if (checkLoop(startPosition, space)) {
+                // System.out.println("Loop detected:");
+                // printSpace(spaceWithObstacle);
+                loopCount++;
+            }
+            space[position.getY()][position.getX()] = initialValue;
+        }
+
+        return loopCount;
     }
 
     private String[][] parseInput(String path, int height, int width) throws IOException {
@@ -40,10 +58,6 @@ public class Solution {
             }
         }
 
-        for (int i = 0; i < MAX_HEIGHT - 1; i++) {
-            System.out.println(Arrays.toString(arr[i]));
-        }
-
         return arr;
     }
 
@@ -59,18 +73,14 @@ public class Solution {
         throw new RuntimeException("Start position not found");
     }
 
-    private int countSteps(Position startPosition, String[][] space) {
+    private List<Position> getGuardTrail(Position startPosition, String[][] space) {
         List<Position> visitedPositions = new ArrayList<>();
 
         int i = startPosition.getY();
         int j = startPosition.getX();
 
-        visitedPositions.add(new Position(j, i));
-
         int iNext = i;
         int jNext = j;
-
-        int stepCounter = 0;
 
         Direction direction = switch (space[i][j]) {
             case "^" -> Direction.UP;
@@ -81,8 +91,6 @@ public class Solution {
         };
 
         while (true) {
-            log.info("Current position: x: {}, y: {}", j, i);
-
             if (direction == Direction.UP) {
                 iNext = i - 1;
                 jNext = j;
@@ -104,7 +112,7 @@ public class Solution {
             }
 
             if (!isOut(new Position(jNext, iNext), MAX_HEIGHT, MAX_WIDTH)) {
-                if (space[iNext][jNext].equals("#")) {
+                if (space[iNext][jNext].equals("#") || space[iNext][jNext].equals("O")) {
                     direction = switch (direction) {
                         case UP -> Direction.RIGHT;
                         case DOWN -> Direction.LEFT;
@@ -112,14 +120,12 @@ public class Solution {
                         case RIGHT -> Direction.DOWN;
                     };
 
-                    log.debug("Turn: {}", direction);
                 } else {
                     i = iNext;
                     j = jNext;
 
-                    if (!visitedPositions.contains(new Position(j, i))) {
+                    if (!visitedPositions.contains(new Position(j, i)) && !(i == startPosition.getY() && j == startPosition.getX())) {
                         visitedPositions.add(new Position(j, i));
-                        stepCounter++;
                     }
                 }
             } else {
@@ -127,11 +133,100 @@ public class Solution {
             }
         }
 
-        return stepCounter + 1;
+        return visitedPositions;
+    }
+
+    private boolean checkLoop(Position startPosition, String[][] space) {
+        int i = startPosition.getY();
+        int j = startPosition.getX();
+
+        int iNext = i;
+        int jNext = j;
+
+        List<Movement> movementLog = new ArrayList<>();
+
+        Direction direction = switch (space[i][j]) {
+            case "^" -> Direction.UP;
+            case "v" -> Direction.DOWN;
+            case "<" -> Direction.LEFT;
+            case ">" -> Direction.RIGHT;
+            default -> throw new RuntimeException("Position does not match any known state");
+        };
+
+        movementLog.add(new Movement(j, i, direction));
+
+        while (true) {
+            if (direction == Direction.UP) {
+                iNext = i - 1;
+                jNext = j;
+            }
+
+            if (direction == Direction.DOWN) {
+                iNext = i + 1;
+                jNext = j;
+            }
+
+            if (direction == Direction.LEFT) {
+                iNext = i;
+                jNext = j - 1;
+            }
+
+            if (direction == Direction.RIGHT) {
+                iNext = i;
+                jNext = j + 1;
+            }
+
+            if (!isOut(new Position(jNext, iNext), MAX_HEIGHT, MAX_WIDTH)) {
+                if (space[iNext][jNext].equals("#") || space[iNext][jNext].equals("O")) {
+                    direction = switch (direction) {
+                        case UP -> Direction.RIGHT;
+                        case DOWN -> Direction.LEFT;
+                        case LEFT -> Direction.UP;
+                        case RIGHT -> Direction.DOWN;
+                    };
+
+                    // log.debug("Turn: {}", direction);
+                } else {
+                    i = iNext;
+                    j = jNext;
+
+                    Movement movement = new Movement(j, i, direction);
+
+                    if (movementLog.contains(movement)) {
+                        return true;
+                    } else {
+                        movementLog.add(movement);
+                    }
+                }
+            } else {
+                return false;
+            }
+        }
     }
 
     private boolean isOut(Position position, int height, int width) {
         return position.getX() >= width || position.getX() < 0 || position.getY() >= height || position.getY() < 0;
+    }
+
+    private void printSpace(String[][] space) {
+        System.out.println();
+        for (String[] row : space) {
+            System.out.println(Arrays.toString(row));
+        }
+    }
+
+    private int countObstacles(String[][] space) {
+        int count = 0;
+
+        for (String[] row : space) {
+            for (String col : row) {
+                if (col.equals("#") || col.equals("O")) {
+                    count++;
+                }
+            }
+        }
+
+        return count;
     }
 
     public static void main(String[] args) {
