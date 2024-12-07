@@ -34,7 +34,7 @@ public class Solution {
          * to adding obstacles outside the initial guard path since the guard will never
          * get to such obstacles. The initial guard position is not included to not get
          * overwritten by an added obstacle. */
-        List<Position> initialGuardPath = getGuardPath(startPosition, space);
+        Set<Position> initialGuardPath = getGuardPath(startPosition, space);
 
         for (Position position : initialGuardPath) {
             String initialValue = space[position.getY()][position.getX()];
@@ -98,8 +98,8 @@ public class Solution {
      *
      * @return A list of visited positions on a map (the guard path)
      */
-    private List<Position> getGuardPath(Position startPosition, String[][] space) {
-        List<Position> visitedPositions = new ArrayList<>();
+    private Set<Position> getGuardPath(Position startPosition, String[][] space) {
+        Set<Position> visitedPositions = new HashSet<>();
 
         int x = startPosition.getX();
         int y = startPosition.getY();
@@ -117,8 +117,7 @@ public class Solution {
                     y = nextPosition.getY();
 
                     /* The start position is not included in the list of visited positions */
-                    if (!visitedPositions.contains(new Position(x, y))
-                            && !(x == startPosition.getX() && y == startPosition.getY())) {
+                    if (!(x == startPosition.getX() && y == startPosition.getY())) {
                         visitedPositions.add(new Position(x, y));
                     }
                 }
@@ -142,7 +141,7 @@ public class Solution {
         /* This list contains a log of the positions the guard visited and the
         * direction the guard was facing. The direction is important for determining
         * if the guard is moving in a loop. */
-        List<Movement> movementLog = new ArrayList<>();
+        Set<Movement> movementLog = new HashSet<>();
 
         int x = startPosition.getX();
         int y = startPosition.getY();
@@ -165,8 +164,7 @@ public class Solution {
 
                     /* If the guard was already at this position moving at the
                      * same direction, the guard is moving in a loop. */
-                    if (movementLog.contains(movement)) return true;
-                    else movementLog.add(movement);
+                    if (!movementLog.add(movement)) return true;
                 }
             } else {
                 return false;
