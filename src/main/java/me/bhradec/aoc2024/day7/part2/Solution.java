@@ -1,4 +1,4 @@
-package me.bhradec.aoc2024.day7.part1;
+package me.bhradec.aoc2024.day7.part2;
 
 import org.apache.commons.cli.*;
 import org.slf4j.Logger;
@@ -77,7 +77,8 @@ public class Solution {
         }
 
         return isEquationSolvable(result, operands, partialResult * operands.get(index + 1), index + 1)
-                || isEquationSolvable(result, operands, partialResult + operands.get(index + 1), index + 1);
+                || isEquationSolvable(result, operands, partialResult + operands.get(index + 1), index + 1)
+                || isEquationSolvable(result, operands, Long.parseLong(partialResult.toString() + operands.get(index + 1).toString()), index + 1);
     }
 
     public static void main(String[] args) {
