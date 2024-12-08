@@ -86,10 +86,6 @@ public class Solution {
 
                     log.debug("First direction");
 
-                    if (distanceFromOrigin(firstLocation) > distanceFromOrigin(secondLocation)) {
-
-                    }
-
                     // For next harmonic formula to work, first considered location must be closer to origin then second
                     Location firstLocationHelper = distanceFromOrigin(firstLocation) < distanceFromOrigin(secondLocation)
                             ? firstLocation
@@ -99,6 +95,7 @@ public class Solution {
                             ? secondLocation
                             : firstLocation;
 
+                    // Get harmonics in one direction
                     while (true) {
                         log.debug("First location: {}", firstLocationHelper);
                         log.debug("Second location: {}", secondLocationHelper);
@@ -132,6 +129,7 @@ public class Solution {
                             ? secondLocation
                             : firstLocation;
 
+                    // Get harmonics in other direction
                     while (true) {
                         log.debug("First location: {}", firstLocationHelper);
                         log.debug("Second location: {}", secondLocationHelper);
@@ -158,6 +156,8 @@ public class Solution {
             }
         }
 
+        /* If there is more than one antenna with a certain frequency, it's also a harmonic
+         * since it's in the same row (specified by task). */
         for (Map.Entry<String, List<Antenna>> antennaGroup : antennas.entrySet()) {
             if (antennaGroup.getValue().size() > 1) {
                 for (Antenna antenna : antennaGroup.getValue()) {
