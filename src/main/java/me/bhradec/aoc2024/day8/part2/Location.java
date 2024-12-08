@@ -1,4 +1,4 @@
-package me.bhradec.aoc2024.day8.part1;
+package me.bhradec.aoc2024.day8.part2;
 
 import java.util.Objects;
 
