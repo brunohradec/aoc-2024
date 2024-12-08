@@ -86,16 +86,16 @@ public class Solution {
 
                     log.debug("First direction");
 
-                    if (distangeFromOrigin(firstLocation) > distangeFromOrigin(secondLocation)) {
+                    if (distanceFromOrigin(firstLocation) > distanceFromOrigin(secondLocation)) {
 
                     }
 
                     // For next harmonic formula to work, first considered location must be closer to origin then second
-                    Location firstLocationHelper = distangeFromOrigin(firstLocation) < distangeFromOrigin(secondLocation)
+                    Location firstLocationHelper = distanceFromOrigin(firstLocation) < distanceFromOrigin(secondLocation)
                             ? firstLocation
                             : secondLocation;
 
-                    Location secondLocationHelper = distangeFromOrigin(secondLocation) > distangeFromOrigin(firstLocation)
+                    Location secondLocationHelper = distanceFromOrigin(secondLocation) > distanceFromOrigin(firstLocation)
                             ? secondLocation
                             : firstLocation;
 
@@ -124,11 +124,11 @@ public class Solution {
                     log.debug("Second direction");
 
                     // For next harmonic formula to work, first considered location must be closer to origin then second
-                    firstLocationHelper = distangeFromOrigin(firstLocation) < distangeFromOrigin(secondLocation)
+                    firstLocationHelper = distanceFromOrigin(firstLocation) < distanceFromOrigin(secondLocation)
                             ? firstLocation
                             : secondLocation;
 
-                    secondLocationHelper = distangeFromOrigin(secondLocation) > distangeFromOrigin(firstLocation)
+                    secondLocationHelper = distanceFromOrigin(secondLocation) > distanceFromOrigin(firstLocation)
                             ? secondLocation
                             : firstLocation;
 
@@ -185,8 +185,8 @@ public class Solution {
         return antinodeLocations.size();
     }
 
-    public double distangeFromOrigin(Location location) {
-        return Math.sqrt((location.getY() - 0) * (location.getY() - 0) + (location.getX() - 0) * (location.getX() - 0));
+    public double distanceFromOrigin(Location location) {
+        return Math.sqrt((location.getY()) * (location.getY()) + (location.getX()) * (location.getX()));
     }
 
     private boolean isInRange(Location location, int width, int height) {
