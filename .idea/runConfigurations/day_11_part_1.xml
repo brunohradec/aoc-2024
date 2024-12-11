@@ -1,0 +1,16 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="day 11 part 1" type="Application" factoryName="Application">
+    <option name="MAIN_CLASS_NAME" value="me.bhradec.aoc2024.day11.part1.Solution" />
+    <module name="aoc-2024.main" />
+    <option name="PROGRAM_PARAMETERS" value="-i &quot;$USER_HOME$/Downloads/day_11_input.txt&quot;" />
+    <extension name="coverage">
+      <pattern>
+        <option name="PATTERN" value="me.bhradec.aoc2024.day1.part1.*" />
+        <option name="ENABLED" value="true" />
+      </pattern>
+    </extension>
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>
