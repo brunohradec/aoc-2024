@@ -31,6 +31,8 @@ public class Solution {
             Map<Long, Long> tempCountCache = new HashMap<>();
             for (Long cachedStone : countCache.keySet()) {
                 for (Long nextStone : nextStone(cachedStone)) {
+                    /* Counter is created for each number instead of repeating it to avoid OutOfMemory exception. */
+
                     /* For each stone that appeared once (1x) in a previous blink
                      * that created one new stone after a blink,
                      * for instance 1 changing to 2024,
